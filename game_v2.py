@@ -4,6 +4,9 @@
 
 import numpy as np
 
+MIN = 1
+MAX = 100
+
 def createGuessFunction(number: int):
     """ Returns guess function
 
@@ -42,34 +45,61 @@ def random_predict(guessFunction) -> int:
 
     while True:
         count += 1
-        predict_number = np.random.randint(1, 101)  # предполагаемое число
+        predict_number = np.random.randint(MIN, MAX + 1)  # предполагаемое число
         if guessFunction(predict_number) == 0:
             break  # выход из цикла если угадали
     return count
 
+def binSearchPredict(guessFunction) -> int:
+    """Находит число бинарным поиском
 
-def score_game(random_predict) -> int:
+    Args:
+        guessFunction (function): Responds to attempts to guess the number
+
+    Returns:
+        int: Число попыток
+    """
+    count = 0
+
+    currentMin = MIN
+    currentMax = MAX
+
+    while True:
+        count += 1
+        predictNumber = (currentMin + currentMax) // 2
+        response = guessFunction(predictNumber)
+        if response == 0:
+            break  # выход из цикла если угадали
+        if response > 0:
+            currentMin = predictNumber + 1
+        else:
+            currentMax = predictNumber - 1
+    return count
+
+def score_game(predictFunction) -> int:
     """За какое количство попыток в среднем за 1000 подходов угадывает наш алгоритм
 
     Args:
-        random_predict ([type]): функция угадывания
+        predictFunction ([type]): функция угадывания
 
     Returns:
         int: среднее количество попыток
     """
     count_ls = []
     #np.random.seed(1)  # фиксируем сид для воспроизводимости
-    random_array = np.random.randint(1, 101, size=(1000))  # загадали список чисел
+    random_array = np.random.randint(MIN, MAX + 1, size=(1000))  # загадали список чисел
 
     for number in random_array:
-        guessFunction = createGuessFunction(number)
-        count_ls.append(random_predict(guessFunction))
+        count_ls.append(predictFunction(createGuessFunction(number)))
 
     score = int(np.mean(count_ls))
-    print(f"Ваш алгоритм угадывает число в среднем за:{score} попыток")
+    print(f"Ваш алгоритм угадывает число в среднем за {score} попыток")
     return score
 
 
 if __name__ == "__main__":
     # RUN
+    print("Random alg: ")
     score_game(random_predict)
+    print("Bin search alg: ")
+    score_game(binSearchPredict)
